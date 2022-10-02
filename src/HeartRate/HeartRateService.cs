@@ -86,17 +86,10 @@ internal class HeartRateService : IHeartRateService
         }
     }
 
+    public static DeviceInformation device;
+
     private void InitiateDefaultCore()
     {
-        var heartrateSelector = GattDeviceService
-            .GetDeviceSelectorFromUuid(GattServiceUuids.HeartRate);
-
-        var devices = DeviceInformation
-            .FindAllAsync(heartrateSelector)
-            .AsyncResult();
-
-        var device = devices.FirstOrDefault();
-
         if (device == null)
         {
             _log.Write("Unable to locate a device.");
@@ -191,7 +184,7 @@ internal class HeartRateService : IHeartRateService
             }
 
             var reading = readingValue.Value;
-            DebugLog.WriteLog($"Read {reading.Flags:X} {reading.Status} {reading.BeatsPerMinute}");
+            DebugLog.WriteValue($"Read {reading.Flags:X} {reading.Status} {reading.BeatsPerMinute}");
 
             HeartRateUpdated?.Invoke(reading);
         }

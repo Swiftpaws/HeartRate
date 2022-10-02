@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.VisualStyles;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using Windows.Devices.Enumeration;
 using static HeartRate.User32;
+using ContentAlignment = System.Drawing.ContentAlignment;
 
 namespace HeartRate;
 
@@ -59,7 +64,14 @@ public partial class HeartRateForm : Form
     {
         try
         {
-            DebugLog.Initialize(HeartRateSettings.GetSettingsFile("logs.txt"));
+            var dlg = new ChooseDevice();
+            dlg.ShowDialog(this);
+
+            HeartRateService.device = dlg.device;
+            var name = dlg.device.Name.Replace(":", string.Empty);
+
+            var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            DebugLog.Initialize($"{baseDirectory}\\logs-{name}.txt", $"{baseDirectory}\\values-{name}.txt");
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
             DebugLog.WriteLog("Starting up");
             // Order of operations -- _startedAt has to be set before
@@ -88,6 +100,9 @@ public partial class HeartRateForm : Form
             CreateEnumSubmenu<ImageLayout>(
                 backgroundImagePositionToolStripMenuItem,
                 backgroundImagePositionToolStripMenuItemItem_Click);
+
+
+            this.Text += $" - {name}";
         }
         catch
         {

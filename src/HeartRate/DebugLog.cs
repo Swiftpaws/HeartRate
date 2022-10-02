@@ -5,9 +5,9 @@ using System.Text;
 
 namespace HeartRate;
 
-internal class DebugLog
+public class DebugLog
 {
-    private readonly string _name;
+    protected readonly string _name;
 
     public DebugLog(string name)
     {
@@ -20,10 +20,12 @@ internal class DebugLog
     }
 
     private static FileStream _fs = null;
+    private static FileStream _fsV = null;
 
-    public static void Initialize(string filename)
+    public static void Initialize(string filename, string valueFileName)
     {
         _fs = File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.Read);
+        _fsV = File.Open(valueFileName, FileMode.Create, FileAccess.Write, FileShare.Read);
     }
 
     internal static string FormatLine(string s)
@@ -46,6 +48,24 @@ internal class DebugLog
 
             _fs.Write(bytes, 0, bytes.Length);
             _fs.Flush();
+        }
+    }
+
+    public static void WriteValue(string s)
+    {
+        Debug.WriteLine(s);
+
+        if (_fsV != null)
+        {
+            var bytes = Encoding.UTF8.GetBytes(FormatLine(s));
+
+            if (_fsV.Length > 1024 * 1024)
+            {
+                _fsV.SetLength(0);
+            }
+
+            _fsV.Write(bytes, 0, bytes.Length);
+            _fsV.Flush();
         }
     }
 }
